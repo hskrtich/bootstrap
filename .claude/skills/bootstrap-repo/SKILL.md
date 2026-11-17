@@ -73,7 +73,9 @@ cd <target> && pre-commit autoupdate && pre-commit validate-config
 
 If `pre-commit` is missing, use `uvx pre-commit` in its place. A repo that `autoupdate` cannot update goes in the report with its error.
 
-Done when: every matched HOOKS.md row has its block, every original hook survives, `autoupdate` ran, and `validate-config` passes.
+`autoupdate` picks the newest tag reachable from each hook repo's default branch, so it can **downgrade** a hook whose releases are tagged off that branch. gitleaks does this: it moves v8.30.1 → v8.30.0. Compare every `rev` change it prints. When the new version is lower than the old one, restore the old `rev`, re-run `validate-config`, and list it in the report.
+
+Done when: every matched HOOKS.md row has its block, every original hook survives, `autoupdate` ran with no downgrade left in place, and `validate-config` passes.
 
 ## 5. Install and check
 
@@ -105,6 +107,6 @@ Leave everything uncommitted. Report:
 
 - Each of the three files: created or merged, with every disagreement where the target's value was kept and every template setting the target now picks up.
 - Stacks detected → hooks added, plus suggested hooks from HOOKS.md that matched but were left out.
-- `rev` changes from `autoupdate`.
+- `rev` changes from `autoupdate`, and any downgrades you reverted.
 - Files the fixers would rewrite, from the worktree diff. The hook fixes each one the next time it is committed; `pre-commit run --all-files` in the target fixes them all at once.
 - Hooks that failed, split into "missing tool on PATH" (name the install command) and "real findings" (count and a sample).
